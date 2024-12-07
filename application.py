@@ -2,12 +2,38 @@ import streamlit as st
 import pandas as pd
 import pickle
 from src.pipeline.predict_pipeline import CustomData, PredictPipeline
+from src.pipeline.train_pipeline import Models_report
+from matplotlib import pyplot as plt
 
-model = pickle.load(open("artifacts/model.pkl", 'rb'))
-preprocessor = pickle.load(open("artifacts/preprocessor.pkl", 'rb'))
+
+## Loading Score Dictionary
+with open("artifacts/score.pkl", "rb") as file:
+    score_dict = pickle.load(file)
+
 
 st.title("Student Score Prediction")
 
+st.subheader("Step1: Select Model to Visualize Performance")
+model_names = list(score_dict.keys())
+selected_model = st.multiselect(
+    "Select models to look at the R2 Score on Test Dataset",
+    model_names
+)
+
+if selected_model:
+    selected_report = {model:score_dict[model] for model in selected_model}
+    selected_df = pd.DataFrame(list(selected_report.items()), columns=["Model", "R2 Score"])
+    selected_df = selected_df.sort_values(by="R2 Score", ascending=False)
+
+    plt.figure(figsize=(8, 5))
+    plt.barh(selected_df["Model"], selected_df["R2 Score"], color="skyblue")
+    plt.xlabel("R2 Score")
+    plt.ylabel("Model")
+    plt.title("R2 Scores of Selected Models")
+    st.pyplot(plt)
+
+
+st.subheader("Step 3: Input Features for Prediction")
 # User Inputs
 gender = st.selectbox("Gender", ["male", "female"])
 race_ethnicity = st.selectbox("Race/Ethnicity", ["group A", "group B", "group C", "group D", "group E"])
