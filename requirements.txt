@@ -7,4 +7,5 @@ xgboost
 dill
 dataclasses
 flask
+streamlit
 -e .
